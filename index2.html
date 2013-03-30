@@ -1,0 +1,120 @@
+    <!DOCTYPE html>
+    <html>
+    <body>
+    <audio id="audio">
+    //AAC Chrome / Safari
+    <source src="audio/01.m4a" type="audio/mpeg" />
+    // add ogg for Firefox?
+    </audio>
+    <p id="demo">Click the button to get your coordinates:</p>
+    <button id="init">Init</button>
+    <button onclick="playAudio()">Play Audio</button>
+    <button onclick="volumeUp()">Volume Up</button>
+    <button onclick="volumeDown()">Volume Down</button>
+    <button onclick="nextTrack()">Change Track</button>
+    
+<script>
+
+// run on page load
+var button = document.getElementById('init');
+var audio = document.getElementById('audio');
+var onClick = function() {
+audio.load();
+audio.play(); // audio will load and then play
+};
+button.addEventListener('click', onClick, false);
+
+function init()
+{
+    var audio = document.getElementById('audio');
+    audio.play();
+    audio.volume=0.0;
+    var onEnded = function() {
+	this.play();
+    };
+    // Looping workaround for iOS
+    audio.addEventListener('ended', onEnded, false);
+}
+
+function playAudio()
+{
+    var audio = document.getElementById('audio');
+    audio.volume=1.0;
+}
+
+function nextTrack()
+{
+    var audio = document.getElementById('audio');
+    audio.src="audio/02.m4a";
+    audio.play();
+}
+
+function volumeUp()
+{
+    var audio = document.getElementById('audio');
+    var v = audio.volume;
+    if (v < 1.0) { v=v+0.1; }
+    audio.volume=v;
+}
+
+function volumeDown()
+{
+    var audio = document.getElementById('audio');
+    var v = audio.volume;
+    if (v > 0.0) { v=v-0.1; }
+    audio.volume=v;
+}
+
+var R = 6371000; //mean radius of the earth in metres
+
+function toRad(number)
+{
+    return number * Math.PI / 180;
+}
+/* Get the great-circle distance between two points
+   using the Haversine formula
+   
+   @param {Number} lat1, lon1: first point in decimal degrees
+   @param {Number} lat2, lon2: second point in decimal degrees
+   @returns (Number) distance between points in meters
+*/
+function getDistance(lat, lon1, lat2, lon2)
+{
+    var dlon = toRad((lon2 - lon1));
+    var dlat = toRad((lat2 - lat1));
+    var lat1 = toRad(lat1);
+    var lat2 = toRad(lat2);
+    var a = Math.sin(dlat/2)*Math.sin(dlat/2) + 
+	Math.cos(lat1) * Math.cos(lat2) * Math.sin(dlon/2)*Math.sin(dlon/2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    var distance = R * c;
+    return distance;
+}
+
+var x=document.getElementById("demo");
+var lat=60.17921;
+var lon=24.95361;
+
+function getLocation()
+{
+    if (navigator.geolocation)
+    {
+	navigator.geolocation.getCurrentPosition(showPosition);
+    }
+    else{x.innerHTML="Geolocation is not supported by this browser.";}
+}
+function showPosition(position)
+{
+    var dist = getDistance(position.coords.latitude,
+			   position.coords.longitude, 
+			   lat,
+			   lon);
+    x.innerHTML="Latitude: " + position.coords.latitude + 
+	"<br>Longitude: " + position.coords.longitude +
+	"<br> Distance: " + dist;	
+}
+
+</script>
+    </body>
+    </html>
+
