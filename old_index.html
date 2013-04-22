@@ -1,0 +1,87 @@
+    <!DOCTYPE html>
+    <html>
+    <script>
+    window.onload = init;
+var context;
+var bufferLoader;
+var audiopipelines;
+var current =0;
+var list = 
+	[
+	    'audio/01.m4a',
+	    'audio/02.m4a',
+	    'audio/03.m4a',
+	    'audio/04.m4a'
+	];
+
+function init() {
+    context = new webkitAudioContext();
+
+    bufferLoader = new BufferLoader(
+	context,
+	[
+	    'audio/01.m4a',
+	    'audio/02.m4a',
+	    'audio/03.m4a',
+	    'audio/04.m4a'
+	],
+	finishedLoading
+    );
+
+    bufferLoader.load();
+}
+
+function finishedLoading(bufferList) {
+    audiopipelines = new AudioPipelines(bufferList, context);
+
+}
+
+function playAll()
+{
+    for(var i = 0; i < audiopipelines.length; i++){
+	audiopipelines.pipeList['audio_'+list[i]].noteOn(0);
+	audiopipelines.pipeList['volume_'+list[i]].gain.value=0;
+    }
+    audiopipelines.pipeList['volume_'+list[current]].gain.value=1;
+}
+
+function playCurrent()
+{
+    var handle = this.list[current];
+    audiopipelines.pipeList['audio_'+ handle].noteOn(0);
+    audiopipelines.pipeList['volume_' + handle].gain.value=1;
+}
+
+
+function getNewSound()
+{
+    var length = audiopipelines.length;
+    audiopipelines.pipeList['volume_'+list[current]].gain.value=0;
+    current = (current + 1)%length;
+    audiopipelines.pipeList['volume_'+list[current]].gain.value=1;
+}
+
+function restart()
+{
+    audiopipelines.pipeList['audio_'+list[current]].play();
+}
+
+function automated()
+{
+  var timer = setTimeout(function() {
+      console.log('next & play');
+      getNewSound();
+      playCurrent();
+      automated();
+  }, 5000);
+}
+</script>
+<body>
+    <button id="button" onclick="playCurrent()">Play</button>
+    <button id="2" onclick="getNewSound()">Change Track</button>
+    <button id="3" onclick="automated()">Timers</button>
+    <script src='buffer-loader.js' type='text/javascript'></script>
+    <script src='audio_pipelines.js' type='text/javascript'></script>
+    </body>
+    </html>
+
